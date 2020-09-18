@@ -4,13 +4,10 @@ if [ -r "$HOME/.dbus/Xdbus" ]; then
   . "$HOME/.dbus/Xdbus"
 fi
 
-rm image*
-python3 getImagesFromReddit.py
-success=$?
 
-if [[ "$success" -eq 0 ]]; then
-    chmod 777 image*
-    python3 ksetwallpaper.py /home/schapin/Scripts/Dynamic-Wallpaper/image*
+if ! [[ -z "$(ls -A /home/schapin/Scripts/Dynamic-Wallpaper/Images/)" ]]; then
+    python3 ksetwallpaper.py $(find /home/schapin/Scripts/Dynamic-Wallpaper/Images -type f | shuf | head -n 1)
 else
     python3 ksetwallpaper.py $(find /home/schapin/Pictures/Wallpapers -type f | shuf | head -n 1)
+    /bin/bash /home/schapin/Scripts/Dynamic-Wallpaper/initialize.sh
 fi

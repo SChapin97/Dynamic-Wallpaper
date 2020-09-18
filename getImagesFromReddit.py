@@ -4,35 +4,36 @@ import praw
 import random
 import requests
 import re
+import os
 
 REDDIT = praw.Reddit("bot1", user_agent="Post Scraper")
 IMAGE_FORMATS = ["jpeg", "jpg", "png"]
-SUBREDDITS = ["raining", "cozyplaces", "fairytaleasfuck", "outrun"] #wallpaper, wallpapers
+SUBREDDITS = ["raining", "cozyplaces", "fairytaleasfuck", "wallpaper", "wallpapers"]
 
 def get_image():
     posts = []
 
-    done = False
-    subreddit = REDDIT.subreddit(random.choice(SUBREDDITS))
-    for post in subreddit.top("day", limit=7):
-        for format in IMAGE_FORMATS:
-            if format in post.url:
-                posts.append(post)
+    #subreddit = REDDIT.subreddit(random.choice(SUBREDDITS))
+    for sub in SUBREDDITS:
+        subreddit = REDDIT.subreddit(sub)
+        for submission in subreddit.top("day", limit=10):
+            for format in IMAGE_FORMATS:
+                if format in submission.url:
+                    posts.append(submission)
 
-    download_image(posts[random.randint(0, len(posts))].url)
+    for post in posts:
+        download_image(post.url)
 
 
 def download_image(url):
     image = requests.get(url).content
-    image_type = re.search("\.\w+$", url)
+    image_found = re.search("\w+\.\w+$", url)
+    if image_found:
+        image_name = image_found.group()
 
-    image_name = "image" + str(random.randint(0,9)) + ".png"
-    if image_type:
-    	image_name = "image" + str(random.randint(0,9)) + image_type.group()
-
-    with open(image_name, "wb") as handler:
-        	handler.write(image)
-
-
+        image_fullpath = os.path.join("/home/schapin/Scripts/Dynamic-Wallpaper/Images/", image_name)
+        image_file = open(image_fullpath, "wb")
+        image_file.write(image)
+        image_file.close()
 
 get_image()
